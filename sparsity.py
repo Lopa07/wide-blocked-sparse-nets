@@ -78,7 +78,9 @@ def get_model_and_sparse_mask(
 
     # Total # of parameters
     num_params_total = sum(layer_num_param for _, _, layer_num_param in layers.values())
-    logger.info(f"Total # of paramteers in the training model: {num_params_total}")
+    logger.info(
+        f"Total # of paramteers in the non-sparse training model: {num_params_total}"
+    )
 
     if not sparse:
         return model, None
