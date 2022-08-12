@@ -11,7 +11,7 @@ sparsity:
     base_width: 64
 
     # Widening factor
-    widening_factor: 1.1
+    widening_factor: 1.5
 
     # Layer types to sparsify
     layer_types:

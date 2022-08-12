@@ -77,7 +77,11 @@ def get_model_and_sparse_mask(
     layers = collect_layer_info(model)
 
     # Total # of parameters
-    num_params_total = sum(layer_num_param for _, _, layer_num_param in layers.values())
+    num_params_total = sum(
+        num
+        for layer_type, _, num in layers.values()
+        if layer_type in config["layer_types"]
+    )
     logger.info(
         f"Total # of paramteers in the non-sparse training model: {num_params_total}"
     )
@@ -95,7 +99,9 @@ def get_model_and_sparse_mask(
 
     # Total # of parameters in the base model
     base_num_params_total = sum(
-        layer_num_param for _, _, layer_num_param in base_layers.values()
+        num
+        for layer_type, _, num in base_layers.values()
+        if layer_type in config["layer_types"]
     )
     logger.info(f"Total # of paramteers in the baseline model: {base_num_params_total}")
 
