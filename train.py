@@ -68,13 +68,9 @@ def main(config_file: str) -> None:
     # Load configuration
     config = yaml.safe_load(Path(config_file).read_text())
 
-    # Dataset and model names
-    dataset_name = config["dataset"]["name"]
-    model_name = config["model"]["name"]
-
     # Logger
     global log_dir
-    log_dir = setup_log_dir_and_logger(config_file, model_name, dataset_name)
+    log_dir = setup_log_dir_and_logger(config_file, config)
 
     # Tensorboard summary writer
     global tb
@@ -88,6 +84,7 @@ def main(config_file: str) -> None:
     set_seed(config["seed"])
 
     # Dataset
+    dataset_name = config["dataset"]["name"]
     dataset = DATASET(
         dataset_name,
         config["training"]["batch_size"]["train"],
@@ -105,6 +102,7 @@ def main(config_file: str) -> None:
     logger.info(f"# of classes: {num_classes}")
 
     # Model and sparse mask
+    model_name = config["model"]["name"]
     model, sparse_mask = get_model_and_sparse_mask(
         config["sparsity"],
         model_name,
@@ -153,21 +151,26 @@ def main(config_file: str) -> None:
     )
 
 
-def setup_log_dir_and_logger(config_file: str, model: str, dataset: str) -> str:
+def setup_log_dir_and_logger(config_file: str, config: Dict) -> str:
     """Initialize log directory.
 
     Args:
         config_file (str): Configuration yaml file path
-        model (str): Model name to train
-        dataset (str): Dataset name to classify
+        config (Dict): Run configuration
 
     Returns:
         str: Log directory
     """
 
+    # Basic run parameters
+    dataset = config["dataset"]["name"]
+    model = config["model"]["name"]
+    base_width = config["sparsity"]["base_width"]
+    widening_factor = config["sparsity"]["widening_factor"]
+
     # Log directory
     log_dir = datetime.datetime.now().strftime(
-        f"log-{dataset}-{model}-%m_%d_%Y-%H:%M:%S"
+        f"log-{dataset}-{model}-{base_width}-{widening_factor}-%m_%d_%Y-%H:%M:%S"
     )
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
