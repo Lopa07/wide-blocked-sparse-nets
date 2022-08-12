@@ -1,0 +1,7 @@
+matplotlib
+numpy
+scipy
+PyYAML
+torch
+torchvision
+tensorboard

@@ -1,0 +1,69 @@
+### Required variables to train `model` with `dataset` in PyTorch.
+
+# Model parameters
+model:
+    # Model name to train. choices are "VGG16", "ResNet18", "DLA"
+    name: "ResNet18"
+
+# Sparsity parameters
+sparsity:
+    # Base width
+    base_width: 64
+
+    # Widening factor
+    widening_factor: 1.1
+
+    # Layer types to sparsify
+    layer_types:
+        - "Linear"
+        - "Conv2d"
+    
+    # Sparsity distribution type. Choices are "large_to_small"
+    sparsity_dist_type: "large_to_small"
+
+    # Sparsify convolutional layers along IO dims only
+    io_only: true
+
+# Data parameters
+dataset:
+    # Dataset name to classify. Choices are "CIFAR10", "CIFAR100", "SVHN",
+    # "MNIST", "FashionMNIST"
+    name: "CIFAR10"
+
+# Random seed for reproducibility
+seed:
+
+# Training parameters
+training:
+    # Number of epochs
+    num_epochs: 200
+
+    # Optimizer
+    optimizer:
+        # Optimizer name. Choices are: "sgd", "nesterov_sgd", "rmsprop", "adagrad",
+        # or "adam"
+        name: "sgd"
+        # Initial learning rate
+        learning_rate: 0.1
+        # Momentum factor
+        momentum: 0.9
+        # Weight decay (L2 penalty)
+        weight_decay: 0.0005
+
+    # Scheduler
+    scheduler:
+        # Scheduler name. Choices are: "constant", "step", "multistep", "exponential",
+        # or "cosine"
+        name: "cosine"
+        # Scheduler specific key word arguments
+        kwargs:
+
+    # Batch sizes
+    batch_size:
+        train: 128
+        val: 100
+
+    # Resume training from checkpoint
+    resume:
+        from_checkpoint: false
+        checkpoint_dir:

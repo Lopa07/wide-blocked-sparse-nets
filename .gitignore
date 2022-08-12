@@ -1,0 +1,12 @@
+# macOS desktop services
+.DS_Store
+
+# Below are common filetypes to be ignored in python projects.
+# Byte-compiled / optimized / DLL files
+**/**/__pycache__
+
+# data
+data/
+
+# outputs
+log-*/
