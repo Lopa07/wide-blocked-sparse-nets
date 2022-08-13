@@ -83,7 +83,7 @@ def get_model_and_sparse_mask(
         if layer_type in config["layer_types"]
     )
     logger.info(
-        f"Total # of paramteers in the non-sparse training model: {num_params_total}"
+        f"Total # of paramters in the non-sparse training model: {num_params_total}"
     )
 
     if not sparse:
@@ -103,7 +103,7 @@ def get_model_and_sparse_mask(
         for layer_type, _, num in base_layers.values()
         if layer_type in config["layer_types"]
     )
-    logger.info(f"Total # of paramteers in the baseline model: {base_num_params_total}")
+    logger.info(f"Total # of paramters in the baseline model: {base_num_params_total}")
 
     # # of parameters to freeze
     num_params_to_freeze = get_num_params_to_freeze(
