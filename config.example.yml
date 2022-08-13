@@ -22,7 +22,7 @@ sparsity:
     sparsity_dist_type: "large_to_small"
 
     # Sparsify convolutional layers along IO dims only
-    io_only: true
+    io_only: false
 
 # Data parameters
 dataset:

@@ -167,11 +167,13 @@ def setup_log_dir_and_logger(config_file: str, config: Dict) -> str:
     model = config["model"]["name"]
     base_width = config["sparsity"]["base_width"]
     widening_factor = config["sparsity"]["widening_factor"]
+    io_only = config["sparsity"]["io_only"]
 
     # Log directory
-    log_dir = datetime.datetime.now().strftime(
-        f"log-{dataset}-{model}-{base_width}-{widening_factor}-%m_%d_%Y-%H:%M:%S"
-    )
+    log_dir = f"log-{dataset}-{model}-{base_width}-{widening_factor}"
+    if io_only:
+        log_dir += "-io_only"
+    log_dir = datetime.datetime.now().strftime(f"{log_dir}-%m_%d_%Y-%H:%M:%S")
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
