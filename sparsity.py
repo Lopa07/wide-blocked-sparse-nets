@@ -117,6 +117,7 @@ def get_model_and_sparse_mask(
 
     # Save sparsity mask
     torch.save(sparse_mask, os.path.join(log_dir, "sparse_mask.pt"))
+    logger.info("Sparsity mask computed and saved.")
 
     # Adjust layer initialization with sparse mask
     adjust_layer_init(model, layers, num_params_to_freeze, logger)
@@ -224,12 +225,14 @@ def get_num_params_to_freeze(
     """
     sparsity_dist_type = config["sparsity_dist_type"]
     if sparsity_dist_type == "large_to_small":
-        return num_params_to_freeze_w_sparse_type_large_to_small(
-            config, layers, num_params_total, base_num_params_total, logger
-        )
+        num_params_to_freeze = num_params_to_freeze_w_sparse_type_large_to_small(config, layers, num_params_total, base_num_params_total, logger)
 
-    logger.error(f"Sparsity distribution type {sparsity_dist_type} is not supported.")
-    exit()
+    else:
+        logger.error(f"Sparsity distribution type {sparsity_dist_type} is not supported.")
+        exit()
+
+    logger.info("Computed # of parameters to freeze per layer.")
+    return num_params_to_freeze
 
 
 def num_params_to_freeze_w_sparse_type_large_to_small(
@@ -423,6 +426,8 @@ def adjust_layer_init(
         if layer_bias in layers:
             model.state_dict()[layer_bias].data.uniform_(-bound, bound)
 
+    logger.info("Adjusted initial values of weights and biases in sparse layers.")
+
 
 def get_fan_in(
     layer: str, tensor_dims: torch.Size, connectivity: float
@@ -470,6 +475,8 @@ def freeze_model_params(
         # Apply sparsity mask to the layer tensor
         tensor = model.state_dict()[layer]
         mask_tensor(tensor, sparse_mask_layer, io_only, logger)
+
+    logger.info("Froze model parameters with sparsity mask.")
 
 
 def mask_tensor(
