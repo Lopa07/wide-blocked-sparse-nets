@@ -112,7 +112,7 @@ def get_model_and_sparse_mask(
 
     # Sparse mask
     sparse_mask = get_sparse_mask(
-        layers, num_params_to_freeze, device, config["io_only"]
+        layers, num_params_to_freeze, device, config["dist_in_layer"] == "io_only"
     )
 
     # Save sparsity mask
@@ -123,7 +123,9 @@ def get_model_and_sparse_mask(
     adjust_layer_init(model, layers, num_params_to_freeze, logger)
 
     # Freeze model parameters
-    freeze_model_params(model, sparse_mask, config["io_only"], logger)
+    freeze_model_params(
+        model, sparse_mask, config["dist_in_layer"] == "io_only", logger
+    )
 
     return model, sparse_mask
 
@@ -223,12 +225,16 @@ def get_num_params_to_freeze(
     Returns:
         Dict: # of parameters to freeze in each layer
     """
-    sparsity_dist_type = config["sparsity_dist_type"]
+    sparsity_dist_type = config["dist_type"]
     if sparsity_dist_type == "large_to_small":
-        num_params_to_freeze = num_params_to_freeze_w_sparse_type_large_to_small(config, layers, num_params_total, base_num_params_total, logger)
+        num_params_to_freeze = num_params_to_freeze_w_sparse_type_large_to_small(
+            config, layers, num_params_total, base_num_params_total, logger
+        )
 
     else:
-        logger.error(f"Sparsity distribution type {sparsity_dist_type} is not supported.")
+        logger.error(
+            f"Sparsity distribution type {sparsity_dist_type} is not supported."
+        )
         exit()
 
     logger.info("Computed # of parameters to freeze per layer.")
@@ -287,7 +293,7 @@ def num_params_to_freeze_w_sparse_type_large_to_small(
     remainder_freeze = remainder_freeze_total // num_layers_to_freeze
     num_params_to_freeze[:num_layers_to_freeze] = base_freeze + remainder_freeze
 
-    if config["io_only"]:
+    if config["dist_in_layer"] == "io_only":
         # If sparsifying convolutional layers along IO dimensions only, # of
         # parameters to freeze in the convolutional layers should be divisible
         # by the kernel size.

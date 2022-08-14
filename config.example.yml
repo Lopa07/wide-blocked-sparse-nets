@@ -18,11 +18,12 @@ sparsity:
         - "Linear"
         - "Conv2d"
     
-    # Sparsity distribution type. Choices are "large_to_small"
-    sparsity_dist_type: "large_to_small"
+    # Sparsity distribution type along layers. Choices are "large_to_small"
+    dist_type: "large_to_small"
 
-    # Sparsify convolutional layers along IO dims only
-    io_only: false
+    # Sparsity distribution type in a layer. Choices are "random", "io_only",
+    # "blocked"
+    dist_in_layer: "random"
 
 # Data parameters
 dataset:
