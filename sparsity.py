@@ -1,4 +1,4 @@
-"""Helper functions regarding model sparsity:
+"""Helper functions to support model sparsity:
     - get_model_and_sparse_mask: Initialize model and sparse mask
     - get_model: Model
     - collect_layer_info: Collect layer information

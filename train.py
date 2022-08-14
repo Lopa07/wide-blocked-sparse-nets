@@ -1,13 +1,4 @@
-"""Train `model` with `dataset` in PyTorch.
-`model`:
-    - ResNet18
-
-`dataset`:
-    - CIFAR10
-    - CIFAR100
-    - SVHN
-    - MNIST
-    - FashionMNIST
+"""Train wide blocked sparse nets.
 """
 
 
