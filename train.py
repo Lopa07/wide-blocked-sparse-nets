@@ -33,12 +33,12 @@ def get_args() -> argparse.Namespace:
 
     Returns:
         argparse.Namespace: Configuration file with required parameters to train
-                            `model` with `dataset` in PyTorch:
+                            wide blocked sparse nets in PyTorch:
             config_file (str): Configuration yaml file path. Default
                                "config.example.yml"
     """
 
-    parser = argparse.ArgumentParser("Train `model` with `dataset` in PyTorch.")
+    parser = argparse.ArgumentParser("Train wide blocked sparse nets in PyTorch.")
     parser.add_argument(
         "--config_file",
         type=str,
@@ -49,7 +49,7 @@ def get_args() -> argparse.Namespace:
 
 
 def main(config_file: str) -> None:
-    """Train `model` with `dataset` in PyTorch.
+    """Train wide blocked sparse nets in PyTorch.
 
     Args:
         config_file (str): Configuration yaml file path. Default
@@ -459,5 +459,5 @@ if __name__ == "__main__":
     # Get configuration yaml file path
     args = get_args()
 
-    # train `model` with `dataset`` in PyTorch
+    # Train wide blocked sparse nets in PyTorch
     main(**args.__dict__)
