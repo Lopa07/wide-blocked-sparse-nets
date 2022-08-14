@@ -1,8 +1,8 @@
-### Required variables to train `model` with `dataset` in PyTorch.
+### Required variables to train wide blocked sparse nets in PyTorch.
 
 # Model parameters
 model:
-    # Model name to train. choices are "VGG16", "ResNet18", "DLA"
+    # Model name to train. choices are "ResNet18"
     name: "ResNet18"
 
 # Sparsity parameters
@@ -18,12 +18,13 @@ sparsity:
         - "Linear"
         - "Conv2d"
     
-    # Sparsity distribution type along layers. Choices are "large_to_small"
+    # Sparsity distribution type along layers. Choices are "large_to_small" and
+    # "uniform"
     dist_type: "large_to_small"
 
-    # Sparsity distribution type in a layer. Choices are "random", "io_only",
+    # Sparsity pattern within a layer. Choices are "random", "io_only", and
     # "blocked"
-    dist_in_layer: "random"
+    pattern: "random"
 
 # Data parameters
 dataset:

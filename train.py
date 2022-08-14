@@ -120,7 +120,7 @@ def main(config_file: str) -> None:
         config["training"]["num_epochs"],
         model,
         sparse_mask,
-        config["sparsity"]["dist_in_layer"] == "io_only",
+        config["sparsity"]["pattern"] == "io_only",
         train_loader,
         val_loader,
         device,
@@ -159,12 +159,12 @@ def setup_log_dir_and_logger(config_file: str, config: Dict) -> str:
     base_width = config["sparsity"]["base_width"]
     widening_factor = config["sparsity"]["widening_factor"]
     dist_type = config["sparsity"]["dist_type"]
-    dist_in_layer = config["sparsity"]["dist_in_layer"]
+    pattern = config["sparsity"]["pattern"]
 
     # Log directory
     log_dir = (
         f"log-{dataset}-{model}-"
-        + f"{base_width}-{widening_factor}-{dist_type}-{dist_in_layer}"
+        + f"{base_width}-{widening_factor}-{dist_type}-{pattern}"
     )
     log_dir = datetime.datetime.now().strftime(f"{log_dir}-%m_%d_%Y-%H:%M:%S")
     if not os.path.exists(log_dir):

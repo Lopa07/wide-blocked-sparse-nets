@@ -112,7 +112,7 @@ def get_model_and_sparse_mask(
 
     # Sparse mask
     sparse_mask = get_sparse_mask(
-        layers, num_params_to_freeze, device, config["dist_in_layer"] == "io_only"
+        layers, num_params_to_freeze, device, config["pattern"] == "io_only"
     )
 
     # Save sparsity mask
@@ -124,7 +124,7 @@ def get_model_and_sparse_mask(
 
     # Freeze model parameters
     freeze_model_params(
-        model, sparse_mask, config["dist_in_layer"] == "io_only", logger
+        model, sparse_mask, config["pattern"] == "io_only", logger
     )
 
     return model, sparse_mask
@@ -293,7 +293,7 @@ def num_params_to_freeze_w_sparse_type_large_to_small(
     remainder_freeze = remainder_freeze_total // num_layers_to_freeze
     num_params_to_freeze[:num_layers_to_freeze] = base_freeze + remainder_freeze
 
-    if config["dist_in_layer"] == "io_only":
+    if config["pattern"] == "io_only":
         # If sparsifying convolutional layers along IO dimensions only, # of
         # parameters to freeze in the convolutional layers should be divisible
         # by the kernel size.
