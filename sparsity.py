@@ -123,9 +123,7 @@ def get_model_and_sparse_mask(
     adjust_layer_init(model, layers, num_params_to_freeze, logger)
 
     # Freeze model parameters
-    freeze_model_params(
-        model, sparse_mask, config["pattern"] == "io_only", logger
-    )
+    freeze_model_params(model, sparse_mask, config["pattern"] == "io_only", logger)
 
     return model, sparse_mask
 
