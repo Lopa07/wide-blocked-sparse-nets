@@ -64,8 +64,3 @@ training:
     batch_size:
         train: 128
         val: 100
-
-    # Resume training from checkpoint
-    resume:
-        from_checkpoint: false
-        checkpoint_dir:
