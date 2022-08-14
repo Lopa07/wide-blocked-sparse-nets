@@ -163,7 +163,7 @@ def setup_log_dir_and_logger(config_file: str, config: Dict) -> str:
 
     # Log directory
     log_dir = (
-        f"log-{dataset}-{model}-{dist_type}-{pattern}-{base_width}-{widening_factor}"
+        f"log-{dataset}-{model}-{base_width}-{widening_factor}-{dist_type}-{pattern}"
     )
     log_dir = datetime.datetime.now().strftime(f"{log_dir}-%m_%d_%Y-%H:%M:%S")
     if not os.path.exists(log_dir):
