@@ -198,18 +198,23 @@ def plot_results(
         f"Dataset: {dataset}, Model: {model}, "
         + f"Sparsity: {sparsity_dist_type} {sparsity_pattern}"
     )
+    plt.tight_layout()
 
     # Save the plot
-    plt.tight_layout()
-    plt.savefig(
+    fpath = "log-summary"
+    if not os.path.exists(fpath):
+        os.makedirs(fpath)
+
+    fpath = os.path.join(
+        fpath,
         f"log-{dataset}-{model}-{sparsity_dist_type}-{sparsity_pattern}-summary",
-        bbox_inches="tight",
     )
+    plt.savefig(fpath, bbox_inches="tight")
 
 
 if __name__ == "__main__":
     # Get command-line arguments
     args = get_args()
 
-    # Summarize results
+    # Summarize and plot results
     main(**args.__dict__)
