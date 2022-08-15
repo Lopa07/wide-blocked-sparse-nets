@@ -190,7 +190,7 @@ def plot_results(
 
     plt.grid(True, which="both")
     plt.xscale("log")
-    plt.legend()
+    plt.legend(loc="lower center")
 
     plt.xlabel("widening factor")
     plt.ylabel("best validation accuracy")
