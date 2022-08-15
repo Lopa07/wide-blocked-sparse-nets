@@ -17,7 +17,7 @@ sparsity:
     layer_types:
         - "Linear"
         - "Conv2d"
-    
+
     # Sparsity distribution type along layers. Choices are "large_to_small" and
     # "uniform"
     dist_type: "large_to_small"

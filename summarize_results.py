@@ -127,7 +127,7 @@ def collect_results(
         # Best validation accuracy
         checkpoint_path = os.path.join(checkpoint_dir, "ckpt.pth")
         try:
-            checkpoint = torch.load(checkpoint_path)
+            checkpoint = torch.load(checkpoint_path, map_location=torch.device("cpu"))
             best_val_acc = checkpoint["acc"]
 
         except FileNotFoundError:
