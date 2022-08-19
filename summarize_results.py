@@ -188,6 +188,10 @@ def plot_results(
             label=f"base width = {base_width}",
         )
 
+    plt.axhline(
+        best_val_acc[0], linestyle="--", color="#f88379", label=f"vanilla {model}"
+    )
+
     plt.grid(True, which="both")
     plt.xscale("log")
     plt.legend(loc="lower center")
