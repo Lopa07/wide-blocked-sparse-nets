@@ -107,7 +107,7 @@ def get_model_and_sparse_mask(
 
     # # of parameters to freeze
     num_params_to_freeze = get_num_params_to_freeze(
-        config, layers, num_params_total, base_num_params_total, logger
+        config, layers, num_params_total, base_layers, base_num_params_total, logger
     )
 
     # Sparse mask
@@ -208,6 +208,7 @@ def get_num_params_to_freeze(
     config: Dict,
     layers: Dict,
     num_params_total: int,
+    base_layers: Dict,
     base_num_params_total: int,
     logger: logging.Logger,
 ) -> Dict:
@@ -217,6 +218,7 @@ def get_num_params_to_freeze(
         config (Dict): Model sparsity configuration
         layers (Dict): Model layer dimensions and # of parameters
         num_params_total (int): Total # of parameters in the model
+        base_layers (Dict): Base model layer dimensions and # of parameters
         base_num_params_total (int): Total # of parameters in the baseline model
         logger (logging.Logger): Logger
 
@@ -227,6 +229,11 @@ def get_num_params_to_freeze(
     if sparsity_dist_type == "large_to_small":
         num_params_to_freeze = num_params_to_freeze_w_sparse_type_large_to_small(
             config, layers, num_params_total, base_num_params_total, logger
+        )
+
+    elif sparsity_dist_type == "match_base_dist":
+        num_params_to_freeze = num_params_to_freeze_w_sparse_type_match_base_dist(
+            config, layers, num_params_total, base_layers, base_num_params_total, logger
         )
 
     else:
@@ -340,6 +347,53 @@ def num_params_to_freeze_w_sparse_type_large_to_small(
     for i, num in enumerate(num_params_to_freeze):
         layer = layers_to_freeze_sorted[i]
         num_params_to_freeze_dict[layer] = num
+
+    return num_params_to_freeze_dict
+
+
+def num_params_to_freeze_w_sparse_type_match_base_dist(
+    config: Dict,
+    layers: Dict,
+    num_params_total: int,
+    base_layers: Dict,
+    base_num_params_total: int,
+    logger: logging.Logger,
+) -> Dict:
+    """Number of parameters to freeze in each layer. Distribute sparsity to match
+    parameter distribution of the base model in each layer.
+
+    Args:
+        config (Dict): Model sparsity configuration
+        layers (Dict): Model layer dimensions and # of parameters
+        num_params_total (int): Total # of parameters in the model
+        base_layers (Dict): Base model layer dimensions and # of parameters
+        base_num_params_total (int): Total # of parameters in the baseline model
+        logger (logging.Logger): Logger
+
+    Returns:
+        Dict: # of parameters to freeze in each layer
+    """
+
+    # # of parameters to freeze per layer
+    num_params_to_freeze_dict = defaultdict(int)
+    for layer, (layer_type, _, num) in layers.items():
+        if layer_type in config["layer_types"]:
+            base_num = base_layers[layer][-1]
+            if num > base_num:
+                num_params_to_freeze_dict[layer] = num - base_num
+
+    # Total # of parameters to freeze
+    num_params_to_freeze_total = num_params_total - base_num_params_total
+
+    # # of parameters freezing
+    num_params_freezing = sum(num_params_to_freeze_dict.values())
+
+    if num_params_freezing != num_params_to_freeze_total:
+        logger.error(
+            f"# of parameters freezing {num_params_freezing} is different than ",
+            f"the total # of parameters to freeze {num_params_to_freeze_total}.",
+        )
+        exit()
 
     return num_params_to_freeze_dict
 
