@@ -1,18 +1,23 @@
 """Helper functions:
     - get_optimizer: Optimizer
     - get_scheduler: Learning rate scheduler
-    - compare_configs: Compare configurations
+    - read_and_validate_config: Read and validate training configuration
     - plot_loss_accuracy_over_epochs: Plot training and validation loss and
                                       accuracy over epochs
 """
 
 
+import logging
+from pathlib import Path
 from typing import Dict, Iterator, List
 
 import matplotlib.pyplot as plt
 import torch.optim as optim
+import yaml
 from torch.nn.parameter import Parameter
 from torch.optim.lr_scheduler import _LRScheduler
+
+logger = logging.getLogger(__name__)
 
 
 def get_optimizer(
@@ -104,25 +109,30 @@ def get_scheduler(
         )
 
 
-def compare_configs(config: Dict, config_checkpoint: Dict) -> bool:
-    """Compare configurations.
+def read_and_validate_config(config_file: str) -> Dict:
+    """Read and validate training configuration.
 
     Args:
-        config (Dict): Configuration for this run
-        config_checkpoint (Dict): Configuration for checkpoint run
+        config_file (str): Configuration yaml file path. Default 'config.example.yml'
 
     Returns:
-        bool: Check if basic configurations are same with the checkpoint and can
-              resume training
+        Dict: Training configuration
     """
-    return (
-        config["model"] == config_checkpoint["model"]
-        and config["dataset"] == config_checkpoint["dataset"]
-        and config["training"]["optimizer"]["name"]
-        == config_checkpoint["training"]["optimizer"]["name"]
-        and config["training"]["scheduler"]
-        == config_checkpoint["training"]["scheduler"]
-    )
+    # Load configuration
+    config = yaml.safe_load(Path(config_file).read_text())
+
+    if (
+        config["sparsity"]["dist_type"] == "match_base_dist"
+        and config["sparsity"]["pattern"] == "io_only"
+    ):
+        logger.error(
+            "Sparsity distribution type 'match_base_dist' with sparsity pattern "
+            + "'io_only' will result in the base model. Change sparsity pattern "
+            + "to 'random' or 'block'."
+        )
+        exit()
+
+    return config
 
 
 def plot_loss_accuracy_over_epochs(

@@ -57,7 +57,7 @@ def main(config_file: str) -> None:
     """
 
     # Load configuration
-    config = yaml.safe_load(Path(config_file).read_text())
+    config = read_and_validate_config(config_file)
 
     # Logger
     global log_dir
