@@ -19,11 +19,11 @@ sparsity:
         - "Conv2d"
 
     # Sparsity distribution type along layers. Choices are "large_to_small" and
-    # "uniform"
+    # "match_base_dist"
     dist_type: "large_to_small"
 
     # Sparsity pattern within a layer. Choices are "random", "io_only", and
-    # "blocked"
+    # "block"
     pattern: "random"
 
 # Data parameters
