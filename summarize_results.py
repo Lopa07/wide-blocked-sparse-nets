@@ -26,10 +26,10 @@ def get_args() -> argparse.Namespace:
             model (str): Model to train on. choices are "ResNet18". Default
                          "ResNet18"
             sparsity_dist_type (str): Sparsity distribution type along layers.
-                                      Choices are "large_to_small" and "uniform".
-                                      Default "large_to_small"
+                                      Choices are "large_to_small" and
+                                      "match_base_dist". Default "large_to_small"
             sparsity_pattern (str): Sparsity pattern within a layer. Choices are
-                                    "random", "io_only", and "blocked". Default
+                                    "random", "io_only", and "block". Default
                                     "random"
     """
 
@@ -53,7 +53,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "-sdt",
         "--sparsity_dist_type",
-        choices={"large_to_small", "uniform"},
+        choices={"large_to_small", "match_base_dist"},
         type=str,
         default="large_to_small",
         help="Sparsity distribution type along layers",
@@ -61,7 +61,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "-sp",
         "--sparsity_pattern",
-        choices={"random", "io_only", "blocked"},
+        choices={"random", "io_only", "block"},
         type=str,
         default="random",
         help="Sparsity pattern within a layer",
@@ -79,9 +79,9 @@ def main(
                        "CIFAR100", "SVHN", "MNIST", and "FashionMNIST"
         model (str): Model to train on. choices are "ResNet18"
         sparsity_dist_type (str): Sparsity distribution type along layers.
-                                  Choices are "large_to_small" and "uniform"
+                                  Choices are "large_to_small" and "match_base_dist"
         sparsity_pattern (str): Sparsity pattern within a layer. Choices are
-                                "random", "io_only", and "blocked"
+                                "random", "io_only", and "block"
     """
 
     # Collect results from varying base widths and widening factors, for a given
@@ -103,9 +103,9 @@ def collect_results(
                        "CIFAR100", "SVHN", "MNIST", and "FashionMNIST"
         model (str): Model to train on. choices are "ResNet18"
         sparsity_dist_type (str): Sparsity distribution type along layers.
-                                  Choices are "large_to_small" and "uniform"
+                                  Choices are "large_to_small" and "match_base_dist"
         sparsity_pattern (str): Sparsity pattern within a layer. Choices are
-                                "random", "io_only", and "blocked"
+                                "random", "io_only", and "block"
 
     Returns:
         Dict: Best validation accuracies over varying base widths and widening
@@ -169,9 +169,9 @@ def plot_results(
                        "CIFAR100", "SVHN", "MNIST", and "FashionMNIST"
         model (str): Model to train on. choices are "ResNet18"
         sparsity_dist_type (str): Sparsity distribution type along layers.
-                                  Choices are "large_to_small" and "uniform"
+                                  Choices are "large_to_small" and "match_base_dist"
         sparsity_pattern (str): Sparsity pattern within a layer. Choices are
-                                "random", "io_only", and "blocked"
+                                "random", "io_only", and "block"
     """
     colors = ["k", "b", "c", "g", "r"]
     markers = ["^", "x", "o", "s", "d"]
