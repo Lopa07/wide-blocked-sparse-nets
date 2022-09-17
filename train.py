@@ -8,13 +8,11 @@ import logging
 import os
 import shutil
 import time
-from pathlib import Path
 from typing import Dict, List, Tuple
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import yaml
 from torch.nn.modules.loss import _Loss
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
