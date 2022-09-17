@@ -1,19 +1,16 @@
 """Helper functions:
     - get_optimizer: Optimizer
     - get_scheduler: Learning rate scheduler
-    - read_and_validate_config: Read and validate training configuration
     - plot_loss_accuracy_over_epochs: Plot training and validation loss and
                                       accuracy over epochs
 """
 
 
 import logging
-from pathlib import Path
 from typing import Dict, Iterator, List
 
 import matplotlib.pyplot as plt
 import torch.optim as optim
-import yaml
 from torch.nn.parameter import Parameter
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -107,32 +104,6 @@ def get_scheduler(
         return optim.lr_scheduler.CosineAnnealingLR(
             optimizer, T_max=num_epochs, eta_min=0, last_epoch=-1
         )
-
-
-def read_and_validate_config(config_file: str) -> Dict:
-    """Read and validate training configuration.
-
-    Args:
-        config_file (str): Configuration yaml file path. Default 'config.example.yml'
-
-    Returns:
-        Dict: Training configuration
-    """
-    # Load configuration
-    config = yaml.safe_load(Path(config_file).read_text())
-
-    if (
-        config["sparsity"]["dist_type"] == "match_base_dist"
-        and config["sparsity"]["pattern"] == "io_only"
-    ):
-        logger.error(
-            "Sparsity distribution type 'match_base_dist' with sparsity pattern "
-            + "'io_only' will result in the base model. Change sparsity pattern "
-            + "to 'random' or 'block'."
-        )
-        exit()
-
-    return config
 
 
 def plot_loss_accuracy_over_epochs(

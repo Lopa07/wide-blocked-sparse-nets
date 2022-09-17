@@ -374,6 +374,17 @@ def num_params_to_freeze_w_sparse_type_match_base_dist(
         Dict: # of parameters to freeze in each layer
     """
 
+    if config["pattern"] == "io_only":
+        logger.error(
+            "Sparsity distribution type 'match_base_dist' with sparsity pattern "
+            + "'io_only' will result in the base model. Change sparsity pattern "
+            + "to 'random' or 'block'."
+        )
+        exit()
+
+    # Total # of parameters to freeze
+    num_params_to_freeze_total = num_params_total - base_num_params_total
+
     # # of parameters to freeze per layer
     num_params_to_freeze_dict = defaultdict(int)
     for layer, (layer_type, _, num) in layers.items():
@@ -381,9 +392,6 @@ def num_params_to_freeze_w_sparse_type_match_base_dist(
             base_num = base_layers[layer][-1]
             if num > base_num:
                 num_params_to_freeze_dict[layer] = num - base_num
-
-    # Total # of parameters to freeze
-    num_params_to_freeze_total = num_params_total - base_num_params_total
 
     # # of parameters freezing
     num_params_freezing = sum(num_params_to_freeze_dict.values())
