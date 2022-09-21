@@ -112,7 +112,7 @@ def get_model_and_sparse_mask(
 
     # Sparse mask
     sparse_mask = get_sparse_mask(
-        layers, num_params_to_freeze, device, config["pattern"] == "io_only"
+        layers, num_params_to_freeze, device, config["pattern"]
     )
 
     # Save sparsity mask
@@ -407,7 +407,7 @@ def num_params_to_freeze_w_sparse_type_match_base_dist(
 
 
 def get_sparse_mask(
-    layers: Dict, num_params_to_freeze: Dict, device: str, io_only: bool
+    layers: Dict, num_params_to_freeze: Dict, device: str, pattern: str
 ) -> Dict:
     """Sparsity mask from # of parameters to freeze in each layer.
 
@@ -415,7 +415,8 @@ def get_sparse_mask(
         layers (Dict): Model layer dimensions and # of parameters
         num_params_to_freeze (Dict): # of parameters to freeze in each layer
         device (str): Device being used to train: 'gpu' or 'cpu'
-        io_only (bool): Sparsify convolutional layers along IO dims only
+        pattern (str): Sparsity pattern within a layer: "random", "io_only", or
+                       "block_x"
 
     Returns:
         Dict: Sparsity mask
@@ -428,8 +429,8 @@ def get_sparse_mask(
 
         # Layer dimensions and # of parameters
         _, tensor_dims, num_params = layers[layer]
-
-        if io_only:
+        
+        if pattern == "io_only":
             # If sparsifying convolutional layers along IO dimensions only, set
             # the sparsity indices only for those dimensions.
             if len(tensor_dims) == 4:
