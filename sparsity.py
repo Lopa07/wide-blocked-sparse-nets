@@ -8,6 +8,8 @@
                                                          Distribute sparsity from
                                                          large to small layers
     - get_sparse_mask: Sparsity mask from # of parameters to freeze in each layer
+    - get_sparsity_pattern_block_size: Get sparsity pattern and block size for 
+                                       active parameters
     - adjust_layer_init: Adjust initial values of weights and biases in sparse 
                          layers
     - get_fan_in: Compute fan-in and "bound" for parameter initialization, for 
@@ -112,7 +114,7 @@ def get_model_and_sparse_mask(
 
     # Sparse mask
     sparse_mask = get_sparse_mask(
-        layers, num_params_to_freeze, device, config["pattern"]
+        layers, num_params_to_freeze, device, config["pattern"], logger
     )
 
     # Save sparsity mask
@@ -407,7 +409,11 @@ def num_params_to_freeze_w_sparse_type_match_base_dist(
 
 
 def get_sparse_mask(
-    layers: Dict, num_params_to_freeze: Dict, device: str, pattern: str
+    layers: Dict,
+    num_params_to_freeze: Dict,
+    device: str,
+    pattern: str,
+    logger: logging.Logger,
 ) -> Dict:
     """Sparsity mask from # of parameters to freeze in each layer.
 
@@ -417,10 +423,16 @@ def get_sparse_mask(
         device (str): Device being used to train: 'gpu' or 'cpu'
         pattern (str): Sparsity pattern within a layer: "random", "io_only", or
                        "block_x"
+        logger (logging.Logger): Logger
 
     Returns:
         Dict: Sparsity mask
     """
+
+    # Block size for active parameters
+    pattern, b = get_sparsity_pattern_block_size(pattern, logger)
+    logger.info(f"Sparsity pattern {pattern} with block size {b}.")
+
     sparse_mask = {}
     for layer, num_params_to_freeze_layer in num_params_to_freeze.items():
         if num_params_to_freeze_layer == 0:
@@ -429,7 +441,7 @@ def get_sparse_mask(
 
         # Layer dimensions and # of parameters
         _, tensor_dims, num_params = layers[layer]
-        
+
         if pattern == "io_only":
             # If sparsifying convolutional layers along IO dimensions only, set
             # the sparsity indices only for those dimensions.
@@ -451,6 +463,31 @@ def get_sparse_mask(
         sparse_mask[layer] = sparse_mask_layer
 
     return sparse_mask
+
+
+def get_sparsity_pattern_block_size(pattern: str, logger: logging.Logger):
+    """Get sparsity pattern and block size for active parameters.
+
+    Args:
+        pattern (str): Sparsity pattern within a layer: "random", "io_only", or
+                       "block_x"
+        logger (logging.Logger): Logger
+
+    Returns:
+        str: Sparsity pattern
+        int: Block size for active parameters
+    """
+
+    if not pattern.startswith("block"):
+        return pattern, 1
+
+    try:
+        pattern, b = pattern.split("_")
+        return pattern, int(b)
+
+    except ValueError:
+        logger.error(f"Block sparsity pattern format should be ")
+        logger.error(f"block_<block_size>, but found {pattern}.")
 
 
 def adjust_layer_init(
