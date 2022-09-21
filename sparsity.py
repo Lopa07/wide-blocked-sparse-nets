@@ -298,9 +298,7 @@ def num_params_to_freeze_w_sparse_type_large_to_small(
     remainder_freeze = remainder_freeze_total // num_layers_to_freeze
     num_params_to_freeze[:num_layers_to_freeze] = base_freeze + remainder_freeze
 
-    # Adjust # of parameters to freeze according to sparsity pattern
-    pattern = config["pattern"]
-    if pattern == "io_only":
+    if config["pattern"] == "io_only":
         # If sparsifying convolutional layers along IO dimensions only, # of
         # parameters to freeze in the convolutional layers should be divisible
         # by the kernel size.
@@ -333,8 +331,7 @@ def num_params_to_freeze_w_sparse_type_large_to_small(
             )
             exit()
 
-    elif pattern == "random":
-        # Choose weights to freeze randomly
+    else:
         num_params_to_freeze[0] += (
             remainder_freeze_total - remainder_freeze * num_layers_to_freeze
         )
@@ -345,10 +342,6 @@ def num_params_to_freeze_w_sparse_type_large_to_small(
                 f"the total # of parameters to freeze {num_params_to_freeze_total}.",
             )
             exit()
-
-    else:
-        logger.error(f"Unknown sparsity pattern {pattern}.")
-        exit()
 
     num_params_to_freeze_dict = defaultdict(int)
     for i, num in enumerate(num_params_to_freeze):
