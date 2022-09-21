@@ -23,7 +23,7 @@ sparsity:
     dist_type: "large_to_small"
 
     # Sparsity pattern within a layer. Choices are "random", "io_only", and
-    # "block"
+    # "block_x"
     pattern: "random"
 
 # Data parameters
