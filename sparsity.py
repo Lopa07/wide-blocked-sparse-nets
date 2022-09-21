@@ -8,8 +8,8 @@
                                                          Distribute sparsity from
                                                          large to small layers
     - get_sparse_mask: Sparsity mask from # of parameters to freeze in each layer
-    - get_sparsity_pattern_block_size: Get sparsity pattern and block size for 
-                                       active parameters
+    - get_sparsity_pattern_block_dim: Get sparsity pattern and block dimension
+                                      for active parameters
     - adjust_layer_init: Adjust initial values of weights and biases in sparse 
                          layers
     - get_fan_in: Compute fan-in and "bound" for parameter initialization, for 
@@ -21,6 +21,7 @@
 
 import bisect
 import logging
+import math
 import os
 import random
 from collections import defaultdict
@@ -430,7 +431,7 @@ def get_sparse_mask(
     """
 
     # Block size for active parameters
-    pattern, b = get_sparsity_pattern_block_size(pattern, logger)
+    pattern, b = get_sparsity_pattern_block_dim(pattern, logger)
     logger.info(f"Sparsity pattern {pattern} with block size {b}.")
 
     sparse_mask = {}
@@ -442,31 +443,84 @@ def get_sparse_mask(
         # Layer dimensions and # of parameters
         _, tensor_dims, num_params = layers[layer]
 
-        if pattern == "io_only":
-            # If sparsifying convolutional layers along IO dimensions only, set
-            # the sparsity indices only for those dimensions.
-            if len(tensor_dims) == 4:
-                kernel_size = tensor_dims[-2] * tensor_dims[-1]
-                num_params //= kernel_size
-                num_params_to_freeze_layer //= kernel_size
-            tensor_dims = tensor_dims[:2]
+        if pattern == "block":
+            # Freeze weights such that active weights are in blocks. For now,
+            # blocks can be over-lapping.
 
-        sparse_mask_layer = torch.BoolTensor(num_params).fill_(0)
-        if device == "cuda":
-            sparse_mask_layer = sparse_mask_layer.cuda()
+            # Block dimensions
+            block_dims = (min(b, tensor_dims[-2]), min(b, tensor_dims[-1]))
+            ndims = len(tensor_dims)
+            if ndims == 4:
+                block_dims = (
+                    1,
+                    min(b, tensor_dims[-3]),
+                ) + block_dims
 
-        # Randomly generate indices of tensor elements to freeze
-        indices_to_freeze = random.sample(range(num_params), num_params_to_freeze_layer)
-        sparse_mask_layer[indices_to_freeze] = True
-        sparse_mask_layer = sparse_mask_layer.view(tensor_dims)
+            # Initialize sparse mask
+            sparse_mask_layer = torch.BoolTensor(tensor_dims).fill_(1)
+            if device == "cuda":
+                sparse_mask_layer = sparse_mask_layer.cuda()
+
+            # All possible indices
+            idx_dims = np.asarray(tensor_dims) - np.asarray(block_dims) + 1
+            I = np.indices(idx_dims).reshape(ndims, -1).T.tolist()
+
+            # Block size
+            block_size = np.prod(block_dims)
+
+            # Update sparse mask to block-wise unfreeze parameters
+            num_params_frozen = num_params
+            while num_params_frozen > num_params_to_freeze_layer:
+                ## Note: blocks can be over-lapping
+                # # of blocks
+                num_blocks = math.ceil(
+                    (num_params_frozen - num_params_to_freeze_layer) / block_size
+                )
+
+                # Indices to unfreeze
+                J = random.sample(I, num_blocks)
+                J = np.expand_dims(J, 1) + np.indices(block_dims).reshape(ndims, -1).T
+                J = J.reshape(-1, ndims).T.tolist()
+
+                # Unfreeze block parameters
+                sparse_mask_layer[J] = False
+                num_params_frozen = sparse_mask_layer.sum()
+
+            if not (
+                0 <= num_params_to_freeze_layer - sparse_mask_layer.sum() < block_size
+            ):
+                logger.error(
+                    f"# of parameters to freeze does not match for layer {layer}."
+                )
+
+        else:
+            if pattern == "io_only":
+                # If sparsifying convolutional layers along IO dimensions only,
+                # set the sparsity indices only for those dimensions.
+                if len(tensor_dims) == 4:
+                    kernel_size = tensor_dims[-2] * tensor_dims[-1]
+                    num_params //= kernel_size
+                    num_params_to_freeze_layer //= kernel_size
+                tensor_dims = tensor_dims[:2]
+
+            sparse_mask_layer = torch.BoolTensor(num_params).fill_(0)
+            if device == "cuda":
+                sparse_mask_layer = sparse_mask_layer.cuda()
+
+            # Randomly generate indices of tensor elements to freeze
+            indices_to_freeze = random.sample(
+                range(num_params), num_params_to_freeze_layer
+            )
+            sparse_mask_layer[indices_to_freeze] = True
+            sparse_mask_layer = sparse_mask_layer.view(tensor_dims)
 
         sparse_mask[layer] = sparse_mask_layer
 
     return sparse_mask
 
 
-def get_sparsity_pattern_block_size(pattern: str, logger: logging.Logger):
-    """Get sparsity pattern and block size for active parameters.
+def get_sparsity_pattern_block_dim(pattern: str, logger: logging.Logger):
+    """Get sparsity pattern and block dimension for active parameters.
 
     Args:
         pattern (str): Sparsity pattern within a layer: "random", "io_only", or
@@ -487,7 +541,7 @@ def get_sparsity_pattern_block_size(pattern: str, logger: logging.Logger):
 
     except ValueError:
         logger.error(f"Block sparsity pattern format should be ")
-        logger.error(f"block_<block_size>, but found {pattern}.")
+        logger.error(f"block_<block_dim>, but found {pattern}.")
 
 
 def adjust_layer_init(
